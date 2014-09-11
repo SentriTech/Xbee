@@ -1,0 +1,6 @@
+1.当两个Xbee S2（Coordinator & Router）分别烧录AT模式的固件时，二者组建MESH 网络在传播方式为广播（broadcast）情况下会出现Pin 6
+(RSSI/PWM)不会正常输出PWM，其原因可能是Xbee协议中规定广播数据要重发三次而且有几秒的Time out。所以，如果我们将Xbee设置成单播（Unicast）
+模式，那么Xbee 的Pin 6 就会正常输出RSSI了。
+2.单播虽然能解决Pin 6输出RSSI的问题，但是在我们的追踪定位应用中不适合，因为一个一个单播要花费太多时间。一个可以尝试的出路是将Xbee都
+烧录API模式的固件，在API帧中定义发送地址为广播，我们观察接收到的Xbee 的Pin 6输出PWM的情况。
+to be continued ...
