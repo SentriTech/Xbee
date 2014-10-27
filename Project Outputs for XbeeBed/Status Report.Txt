@@ -1,0 +1,14 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [XbeeBed.PrjPcb]
+   Generated File[XbeeBed-RoundHoles-Plated.TXT]
+   Generated File[XbeeBed-SlotHoles-Plated.TXT]
+   Generated File[XbeeBed.DRL]
+   Generated File[XbeeBed.LDP]
+   Generated File[XbeeBed.DRR]
+
+
+Files Generated   : 5
+Documents Printed : 0
+
+Finished Output Generation At 11:36:47 On 2014/10/15

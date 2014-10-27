@@ -1,0 +1,9 @@
+Change Component Designator: OldDesignator=AMS1 NewDesignator=AMS
+Change Component Designator: OldDesignator=BAT_IN1 NewDesignator=BAT_IN
+Change Component Designator: OldDesignator=BL1 NewDesignator=BL
+Change Component Designator: OldDesignator=ISP NewDesignator=ISP1
+Change Component Designator: OldDesignator=Xbee1 NewDesignator=Xbee
+Change Net Name : Old Net Name=NetAMS1_3 New Net Name=NetAMS_3
+Change Net Name : Old Net Name=NetBAT_IN1_1 New Net Name=NetBAT_IN_1
+Change Net Name : Old Net Name=NetBL1_3 New Net Name=NetBL_3
+Added Room: Name=XbeeBed

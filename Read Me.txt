@@ -1,0 +1,12 @@
+    本文件夹下包含了Xbee Bed的电路图资料，Xbee Bed是一块
+设计用来测量Xbee PIN 6的PWM脉宽（代表RSS值）并与Xbee进行
+串口通信传输RSS的电路板。
+    主芯片为ATMEGA 328P-AU，另外包括两个电源电路，分别是
+USB电源和电池电源的调理电路，详情见本文件夹下的“XbeeBed.PrjPcb”。
+
+
+    Xbee Bed是以Arduino Pro Mini为参考而得出的，焊接完后要自
+行烧录Arduino Pro Mini（3.3V 8MHZ）w/ATmega328的Bootloader，
+之后便可以在Arduino IDE下对其编程和下载程序了。
+
+    烧录bootloader方面见“如何给Xbee Bed烧录Bootloader.txt”。

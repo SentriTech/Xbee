@@ -1,0 +1,126 @@
+Removed Pin From Net: NetName=V_USB Pin=C?-1
+Removed Pin From Net: NetName=VCC Pin=C?-2
+Removed Pin From Net: NetName=V_BAT Pin=D?-2
+Removed Pin From Net: NetName=VCC Pin=R?-1
+Change Component Designator: OldDesignator=AMS1117-3.3? NewDesignator=AMS1
+Change Component Designator: OldDesignator=BL8530-331SM? NewDesignator=BL1
+Change Component Designator: OldDesignator=C? NewDesignator=C1
+Change Component Designator: OldDesignator=C? NewDesignator=C2
+Change Component Designator: OldDesignator=C? NewDesignator=C3
+Change Component Designator: OldDesignator=C? NewDesignator=C4
+Change Component Designator: OldDesignator=C? NewDesignator=C5
+Change Component Designator: OldDesignator=C? NewDesignator=C6
+Change Component Designator: OldDesignator=C? NewDesignator=C7
+Change Component Designator: OldDesignator=C? NewDesignator=C8
+Change Component Designator: OldDesignator=C? NewDesignator=C9
+Change Component Designator: OldDesignator=D? NewDesignator=D1
+Change Component Designator: OldDesignator=D? NewDesignator=D2
+Change Component Designator: OldDesignator=D? NewDesignator=D3
+Change Component Designator: OldDesignator=D? NewDesignator=D4
+Change Component Designator: OldDesignator=D? NewDesignator=D5
+Change Component Designator: OldDesignator=D? NewDesignator=D6
+Change Component Designator: OldDesignator=ISP? NewDesignator=ISP1
+Change Component Designator: OldDesignator=JP? NewDesignator=JP1
+Change Component Designator: OldDesignator=L? NewDesignator=L1
+Change Component Designator: OldDesignator=mini-usb? NewDesignator=mini-usb1
+Change Component Designator: OldDesignator=R? NewDesignator=R1
+Change Component Designator: OldDesignator=R? NewDesignator=R2
+Change Component Designator: OldDesignator=R? NewDesignator=R3
+Change Component Designator: OldDesignator=R? NewDesignator=R4
+Change Component Designator: OldDesignator=R? NewDesignator=R5
+Change Component Designator: OldDesignator=R? NewDesignator=R6
+Change Component Designator: OldDesignator=S? NewDesignator=S1
+Change Component Designator: OldDesignator=SW? NewDesignator=SW1
+Change Component Designator: OldDesignator=U? NewDesignator=U1
+Change Component Designator: OldDesignator=Xbee? NewDesignator=Xbee1
+Change Component Designator: OldDesignator=Y? NewDesignator=Y1
+Added Pin To Net: NetName=GND Pin=C1-2
+Added Pin To Net: NetName=NetC?_1 Pin=C2-1
+Added Pin To Net: NetName=GND Pin=C3-2
+Added Pin To Net: NetName=GND Pin=C4-2
+Added Pin To Net: NetName=V_BAT Pin=C5-1
+Added Pin To Net: NetName=GND Pin=C5-2
+Added Pin To Net: NetName=GND Pin=C6-1
+Added Pin To Net: NetName=GND Pin=C7-1
+Added Pin To Net: NetName=VCC Pin=C7-2
+Added Pin To Net: NetName=V_USB Pin=C8-1
+Added Pin To Net: NetName=GND Pin=C8-2
+Added Pin To Net: NetName=V_USB Pin=C9-1
+Added Pin To Net: NetName=GND Pin=C9-2
+Added Pin To Net: NetName=GND Pin=D1-2
+Added Pin To Net: NetName=GND Pin=D2-2
+Added Pin To Net: NetName=GND Pin=D3-2
+Added Pin To Net: NetName=GND Pin=D4-2
+Added Pin To Net: NetName=V_BAT Pin=D5-2
+Added Pin To Net: NetName=GND Pin=D6-2
+Added Pin To Net: NetName=RSSI Pin=R1-1
+Added Pin To Net: NetName=NetC?_1 Pin=R5-1
+Added Pin To Net: NetName=VCC Pin=R6-1
+Change Net Name : Old Net Name=NetAMS1117-3.3?_3 New Net Name=NetAMS1_3
+Change Net Name : Old Net Name=NetC?_1 New Net Name=NetC2_1
+Change Net Name : Old Net Name=NetISP?_1 New Net Name=NetISP1_1
+Change Net Name : Old Net Name=NetISP?_4 New Net Name=NetISP1_4
+Added Pin To Net: NetName=NetBAT_IN1_1 Pin=C4-1
+Added Pin To Net: NetName=NetBAT_IN1_1 Pin=L1-2
+Added Net: Name=NetBAT_IN1_1
+Added Pin To Net: NetName=NetBL1_3 Pin=BL1-3
+Added Pin To Net: NetName=NetBL1_3 Pin=D5-1
+Added Pin To Net: NetName=NetBL1_3 Pin=L1-1
+Added Net: Name=NetBL1_3
+Added Pin To Net: NetName=NetC1_1 Pin=C1-1
+Added Pin To Net: NetName=NetC1_1 Pin=U1-7
+Added Pin To Net: NetName=NetC1_1 Pin=Y1-1
+Added Net: Name=NetC1_1
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=NetC2_2 Pin=JP1-6
+Added Net: Name=NetC2_2
+Added Pin To Net: NetName=NetC3_1 Pin=C3-1
+Added Pin To Net: NetName=NetC3_1 Pin=U1-8
+Added Pin To Net: NetName=NetC3_1 Pin=Y1-2
+Added Net: Name=NetC3_1
+Added Pin To Net: NetName=NetC6_2 Pin=C6-2
+Added Pin To Net: NetName=NetC6_2 Pin=U1-20
+Added Net: Name=NetC6_2
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_1 Pin=R1-2
+Added Net: Name=NetD1_1
+Added Pin To Net: NetName=NetD2_1 Pin=D2-1
+Added Pin To Net: NetName=NetD2_1 Pin=R2-2
+Added Net: Name=NetD2_1
+Added Pin To Net: NetName=NetD3_1 Pin=D3-1
+Added Pin To Net: NetName=NetD3_1 Pin=R3-2
+Added Net: Name=NetD3_1
+Added Pin To Net: NetName=NetD4_1 Pin=D4-1
+Added Pin To Net: NetName=NetD4_1 Pin=R4-2
+Added Net: Name=NetD4_1
+Added Pin To Net: NetName=NetD6_1 Pin=D6-1
+Added Pin To Net: NetName=NetD6_1 Pin=R6-2
+Added Net: Name=NetD6_1
+Added Pin To Net: NetName=NetISP1_3 Pin=ISP1-3
+Added Pin To Net: NetName=NetISP1_3 Pin=R4-1
+Added Pin To Net: NetName=NetISP1_3 Pin=U1-17
+Added Net: Name=NetISP1_3
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=NetR2_1 Pin=Xbee1-15
+Added Net: Name=NetR2_1
+Added Pin To Net: NetName=NetR3_1 Pin=R3-1
+Added Pin To Net: NetName=NetR3_1 Pin=Xbee1-13
+Added Net: Name=NetR3_1
+Added Member To Class: ClassName=XbeeBed Member=Component C1 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component C2 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component C3 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component C4 Cap Pol3
+Added Member To Class: ClassName=XbeeBed Member=Component C6 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component C7 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component C8 Cap Pol3
+Added Member To Class: ClassName=XbeeBed Member=Component C9 Cap
+Added Member To Class: ClassName=XbeeBed Member=Component D1 LED2
+Added Member To Class: ClassName=XbeeBed Member=Component D2 LED2
+Added Member To Class: ClassName=XbeeBed Member=Component D3 LED2
+Added Member To Class: ClassName=XbeeBed Member=Component D4 LED2
+Added Member To Class: ClassName=XbeeBed Member=Component D6 LED2
+Added Member To Class: ClassName=XbeeBed Member=Component R1 Res1
+Added Member To Class: ClassName=XbeeBed Member=Component R3 Res1
+Added Member To Class: ClassName=XbeeBed Member=Component R4 Res1
+Added Member To Class: ClassName=XbeeBed Member=Component R5 Res1
+Added Member To Class: ClassName=XbeeBed Member=Component R6 Res1

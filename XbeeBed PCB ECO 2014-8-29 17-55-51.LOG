@@ -1,0 +1,157 @@
+Added Component: Designator=AMS1(SOT223)
+Added Component: Designator=BL1(SOT89)
+Added Component: Designator=C1(0805)
+Added Component: Designator=C2(0805)
+Added Component: Designator=C3(0805)
+Added Component: Designator=C4(tan-c type)
+Added Component: Designator=C5(tan-d type)
+Added Component: Designator=C6(0805)
+Added Component: Designator=C7(0805)
+Added Component: Designator=C8(tan-c type)
+Added Component: Designator=C9(0805)
+Added Component: Designator=D1(0805)
+Added Component: Designator=D2(0805)
+Added Component: Designator=D3(0805)
+Added Component: Designator=D4(0805)
+Added Component: Designator=D5(1n5819)
+Added Component: Designator=D6(0805)
+Added Component: Designator=ISP1(icsp)
+Added Component: Designator=JP1(ftdi-basic)
+Added Component: Designator=L1(33uh-cd43)
+Added Component: Designator=mini-usb1(mini USB)
+Added Component: Designator=R1(0805)
+Added Component: Designator=R2(0805)
+Added Component: Designator=R3(0805)
+Added Component: Designator=R4(0805)
+Added Component: Designator=R5(0805)
+Added Component: Designator=R6(0805)
+Added Component: Designator=S1(SPST-2)
+Added Component: Designator=SW1(switch)
+Added Component: Designator=U1(32A_N)
+Added Component: Designator=Xbee1(xbee)
+Added Component: Designator=Y1(R38)
+Added Pin To Net: NetName=GND Pin=AMS1-1
+Added Pin To Net: NetName=GND Pin=BL1-1
+Added Pin To Net: NetName=GND Pin=C1-2
+Added Pin To Net: NetName=GND Pin=C3-2
+Added Pin To Net: NetName=GND Pin=C4-2
+Added Pin To Net: NetName=GND Pin=C5-2
+Added Pin To Net: NetName=GND Pin=C6-1
+Added Pin To Net: NetName=GND Pin=C7-1
+Added Pin To Net: NetName=GND Pin=C8-2
+Added Pin To Net: NetName=GND Pin=C9-2
+Added Pin To Net: NetName=GND Pin=D1-2
+Added Pin To Net: NetName=GND Pin=D2-2
+Added Pin To Net: NetName=GND Pin=D3-2
+Added Pin To Net: NetName=GND Pin=D4-2
+Added Pin To Net: NetName=GND Pin=D6-2
+Added Pin To Net: NetName=GND Pin=ISP1-6
+Added Pin To Net: NetName=GND Pin=JP1-1
+Added Pin To Net: NetName=GND Pin=JP1-2
+Added Pin To Net: NetName=GND Pin=mini-usb1-5
+Added Pin To Net: NetName=GND Pin=mini-usb1-6
+Added Pin To Net: NetName=GND Pin=mini-usb1-7
+Added Pin To Net: NetName=GND Pin=mini-usb1-8
+Added Pin To Net: NetName=GND Pin=mini-usb1-9
+Added Pin To Net: NetName=GND Pin=S1-1
+Added Pin To Net: NetName=GND Pin=U1-3
+Added Pin To Net: NetName=GND Pin=U1-5
+Added Pin To Net: NetName=GND Pin=U1-21
+Added Pin To Net: NetName=GND Pin=Xbee1-10
+Added Net: Name=GND
+Added Pin To Net: NetName=NetAMS1_3 Pin=AMS1-3
+Added Pin To Net: NetName=NetAMS1_3 Pin=mini-usb1-1
+Added Net: Name=NetAMS1_3
+Added Pin To Net: NetName=NetBAT_IN1_1 Pin=C4-1
+Added Pin To Net: NetName=NetBAT_IN1_1 Pin=L1-2
+Added Net: Name=NetBAT_IN1_1
+Added Pin To Net: NetName=NetBL1_3 Pin=BL1-3
+Added Pin To Net: NetName=NetBL1_3 Pin=D5-1
+Added Pin To Net: NetName=NetBL1_3 Pin=L1-1
+Added Net: Name=NetBL1_3
+Added Pin To Net: NetName=NetC1_1 Pin=C1-1
+Added Pin To Net: NetName=NetC1_1 Pin=U1-7
+Added Pin To Net: NetName=NetC1_1 Pin=Y1-1
+Added Net: Name=NetC1_1
+Added Pin To Net: NetName=NetC2_1 Pin=C2-1
+Added Pin To Net: NetName=NetC2_1 Pin=ISP1-5
+Added Pin To Net: NetName=NetC2_1 Pin=R5-1
+Added Pin To Net: NetName=NetC2_1 Pin=S1-2
+Added Pin To Net: NetName=NetC2_1 Pin=U1-29
+Added Net: Name=NetC2_1
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=NetC2_2 Pin=JP1-6
+Added Net: Name=NetC2_2
+Added Pin To Net: NetName=NetC3_1 Pin=C3-1
+Added Pin To Net: NetName=NetC3_1 Pin=U1-8
+Added Pin To Net: NetName=NetC3_1 Pin=Y1-2
+Added Net: Name=NetC3_1
+Added Pin To Net: NetName=NetC6_2 Pin=C6-2
+Added Pin To Net: NetName=NetC6_2 Pin=U1-20
+Added Net: Name=NetC6_2
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_1 Pin=R1-2
+Added Net: Name=NetD1_1
+Added Pin To Net: NetName=NetD2_1 Pin=D2-1
+Added Pin To Net: NetName=NetD2_1 Pin=R2-2
+Added Net: Name=NetD2_1
+Added Pin To Net: NetName=NetD3_1 Pin=D3-1
+Added Pin To Net: NetName=NetD3_1 Pin=R3-2
+Added Net: Name=NetD3_1
+Added Pin To Net: NetName=NetD4_1 Pin=D4-1
+Added Pin To Net: NetName=NetD4_1 Pin=R4-2
+Added Net: Name=NetD4_1
+Added Pin To Net: NetName=NetD6_1 Pin=D6-1
+Added Pin To Net: NetName=NetD6_1 Pin=R6-2
+Added Net: Name=NetD6_1
+Added Pin To Net: NetName=NetISP1_1 Pin=ISP1-1
+Added Pin To Net: NetName=NetISP1_1 Pin=U1-16
+Added Net: Name=NetISP1_1
+Added Pin To Net: NetName=NetISP1_3 Pin=ISP1-3
+Added Pin To Net: NetName=NetISP1_3 Pin=R4-1
+Added Pin To Net: NetName=NetISP1_3 Pin=U1-17
+Added Net: Name=NetISP1_3
+Added Pin To Net: NetName=NetISP1_4 Pin=ISP1-4
+Added Pin To Net: NetName=NetISP1_4 Pin=U1-15
+Added Net: Name=NetISP1_4
+Added Pin To Net: NetName=NetR2_1 Pin=R2-1
+Added Pin To Net: NetName=NetR2_1 Pin=Xbee1-15
+Added Net: Name=NetR2_1
+Added Pin To Net: NetName=NetR3_1 Pin=R3-1
+Added Pin To Net: NetName=NetR3_1 Pin=Xbee1-13
+Added Net: Name=NetR3_1
+Added Pin To Net: NetName=RSSI Pin=R1-1
+Added Pin To Net: NetName=RSSI Pin=U1-10
+Added Pin To Net: NetName=RSSI Pin=Xbee1-6
+Added Net: Name=RSSI
+Added Pin To Net: NetName=RXD_PROMINI Pin=JP1-4
+Added Pin To Net: NetName=RXD_PROMINI Pin=U1-30
+Added Pin To Net: NetName=RXD_PROMINI Pin=Xbee1-2
+Added Net: Name=RXD_PROMINI
+Added Pin To Net: NetName=TXD_PROMINI Pin=JP1-5
+Added Pin To Net: NetName=TXD_PROMINI Pin=U1-31
+Added Pin To Net: NetName=TXD_PROMINI Pin=Xbee1-3
+Added Net: Name=TXD_PROMINI
+Added Pin To Net: NetName=V_BAT Pin=BL1-2
+Added Pin To Net: NetName=V_BAT Pin=C5-1
+Added Pin To Net: NetName=V_BAT Pin=D5-2
+Added Pin To Net: NetName=V_BAT Pin=SW1-2
+Added Net: Name=V_BAT
+Added Pin To Net: NetName=V_USB Pin=AMS1-2
+Added Pin To Net: NetName=V_USB Pin=C8-1
+Added Pin To Net: NetName=V_USB Pin=C9-1
+Added Pin To Net: NetName=V_USB Pin=SW1-3
+Added Net: Name=V_USB
+Added Pin To Net: NetName=VCC Pin=C7-2
+Added Pin To Net: NetName=VCC Pin=ISP1-2
+Added Pin To Net: NetName=VCC Pin=JP1-3
+Added Pin To Net: NetName=VCC Pin=R5-2
+Added Pin To Net: NetName=VCC Pin=R6-1
+Added Pin To Net: NetName=VCC Pin=SW1-1
+Added Pin To Net: NetName=VCC Pin=U1-4
+Added Pin To Net: NetName=VCC Pin=U1-6
+Added Pin To Net: NetName=VCC Pin=U1-18
+Added Pin To Net: NetName=VCC Pin=Xbee1-1
+Added Net: Name=VCC
+Added Class: Name=XbeeBed
+Added Room: Name=XbeeBed

@@ -1,0 +1,22 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: XbeeBed.PcbDoc   2014/10/15  11:36:47
+---------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII Plated RoundHoles File : XbeeBed-RoundHoles-Plated.TXT
+ASCII Plated SlotHoles File : XbeeBed-SlotHoles-Plated.TXT
+EIA File   : XbeeBed.DRL
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        21.65mil (0.54991mm)     Round          1                1.76 Inch (44.83 mm)
+T2        27.56mil (0.70002mm)     Slot           3                1.14 Inch (28.97 mm)
+T3        28mil (0.7112mm)         Round          7                3.31 Inch (84.08 mm)
+T4        29.92mil (0.75997mm)     Round          20               4.29 Inch (109.04 mm)
+T5        30mil (0.762mm)          Round          20               6.58 Inch (167.11 mm)
+T6        31.5mil (0.8001mm)       Round          2                0.95 Inch (24.10 mm)
+T7        35.43mil (0.89992mm)     Round          2                0.79 Inch (20.06 mm)
+---------------------------------------------------------------------------
+Totals                                            55               18.83 Inch (478.18 mm)
+
+Total Processing Time (hh:mm:ss) : 00:00:00

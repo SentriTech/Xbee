@@ -1,0 +1,8 @@
+DRC Rules Export File for PCB: C:\Users\wudanseu\Desktop\Xbee_Bed\XbeeBed.PcbDoc
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
+RuleKind=Clearance|RuleName=Clearance_mega328|Scope=Board|Minimum=10.00
+RuleKind=Width|RuleName=Width_normal|Scope=Board|Minimum=11.81
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion|Scope=Board|Minimum=4.00
+RuleKind=Clearance|RuleName=Clearance_normal|Scope=Board|Minimum=19.69
+RuleKind=Width|RuleName=Width_mega328|Scope=Board|Minimum=11.81
+RuleKind=Clearance|RuleName=Clearance_vcc_mega328|Scope=Board|Minimum=10.00
