@@ -1,16 +1,19 @@
-���������
-����Xbeeһ��һ�����ֱ���¼AT�̼���DH��DL����Ϊ�Է���SH��SL��һ��Coordinatorһ��Router�����⽫��
-�Ͷ˵�Xbee��PL��power level���޸�Ϊ��'0-Lowest',����Xbee��ľ����Լ��2.3�ף��˴Ӿ�������Xbee��
-����0.5�����ҵ�λ�úᴩ����һ�ࡣ
+基本情况：
+两个Xbee一收一发，分别烧录AT固件，DH和DL设置为对方的SH和SL，一个Coordinator一个Router，另外将发
+送端的Xbee的PL（power level）修改为了'0-Lowest',两个Xbee间的距离大约在2.3米，人从距离两个Xbee中
+心线0.5米左右的位置横穿到另一侧。
 
-���Խ����
-����normal_spees.jpg���͡�slow_speed.jpg�������Ƿֱ��ǡ�data_normal.txt����
-��data_slow.txt���Ĵ��������ǰ���������ٶȴ�������Xbee�����ݣ������Լ������ٶȣ�0.8��һ����һ��
-0.4�ף���������Xbee��
+测试结果：
+见‘normal_spees.jpg’和‘slow_speed.jpg’，他们分别是‘data_normal.txt’和
+‘data_slow.txt’的处理结果，前者是正常速度穿过两个Xbee的数据，后者以极慢的速度（0.8秒一步，一步
+0.4米）穿过两个Xbee；
 
-���������
-�����ٶ��·���Xbee��RSS�������˵Ľ�������Xbee�����߶�˥�������������߳����ָ������������ٶ�̫��ʱ��
-Xbee��RSS���ܾͻ�ָ���������ͼ��slow_speed.jpg����
+结果分析：
+正常速度下发现Xbee的RSS会随着人的进入两个Xbee的连线而衰减，而随着人走出而恢复过来；但是速度太慢时，
+Xbee的RSS可能就会恢复过来，如图‘slow_speed.jpg’；
 
-�ܽ᣺
-�ܵ���˵Xbee���赲-˥�����ԽϺã�һ�����˾�������Xbee֮��ʱ��RSS����˼�С��Ч�����ԡ�
+总结：
+总的来说Xbee的阻挡-衰减特性较好，一旦有人经过两个Xbee之间时，RSS会因此减小，效果明显。
+
+启示：
+采样（遍历整个网络）时间在100ms以内时，可以得到较明显的RSS值变化。
