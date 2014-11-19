@@ -1,0 +1,919 @@
+<html>
+<head>
+<title>Digi API Frame Maker</title>
+
+<script language="Javascript">
+//-------------------------------------------------------
+//Copyright (C) 2010 Digi International Inc.  All Rights Reserved.
+//
+//This software (“Digi Software”) is provided, without charge, by Digi International Inc. (“Digi”) 
+//and may only be used by Digi customers and subject to the following terms:
+//
+// PERMISSION
+// Permission is granted, to any person obtaining a copy of Digi Software, to 
+//(i)	copy, modify, merge, and produce object code files from the Digi Software and
+//(ii)	distribute copies of the Digi Software, as modified or original code, in source code 
+//or object code files;
+//provided the following conditions are met:
+//(i)	each source code file shall contain this notice [the text of the notice begins 
+//with “Copyright (C) 2010” and ends with “-------/”]
+//(ii)	the Digi Software, whether modified, unmodified or contained in code derived 
+//from the Digi Software, may only be used with products sold by Digi or that contain components sold by Digi.
+//
+//OWNERSHIP
+//This Digi Software is not distributed under an open source license, and Digi does not consent 
+//to combining the Digi Software with code that, when combined with this Digi Software, could result 
+//in the Digi Software being treated as having been released under an open source license.  
+//All modifications or improvements to the Digi Software or derivative works based on the Digi Software are the property of Digi.
+//
+//WARRANTY
+//DIGI SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+//OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//FITNESS FOR A PARTICULAR PURPOSE, OR NONINFRINGEMENT.  
+//
+//LIABILITY
+//IN NO EVENT SHALL DIGI BE LIABLE FOR ANY CLAIM, DAMAGES,  OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+//TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE DIGI SOFTWARE OR USE OF THE DIGI SOFTWARE.
+//
+//-------------------------------------------------------
+//
+// History
+// ver 0.01 - google chrome - works fine, but nothing works under IE, and only partially works under Firefox
+// ver 0.02 - works under google chrome 5.0.375.127 and firefox 3.6.8, but not IE
+// Added doc for 0x17 frame type.
+// ver 0.03 - works under IE 8.0.7600.16385
+// added doc for frame types 0x90, 92, 94, 95, 97, A0
+// ver 0.04 - moved Table1 to the top spanning 2 columns, Tables 2 and 3 side by side and below Table 1
+// ver 0.05 - by suggestion of DG, button press of frame type launches both frame build table and documentation table
+// Table 3 given a white background for readability
+// ver 0.06 - by suggestion of DG, added AP1/AP2 buttons.  AP2 mode selects escaping of 4 particular byte values.
+// ver 0.07 - fixed 0x91 checksum field in table 2.
+// ver 0.08 - added 0xA5 Join Notification; fixed problem with FrameID value field overwrite - was putting 1 in the fourth value field
+// of every frame type whether that frame type had a frame id field or not.
+// ver 0.09 - corrected a typo in 0x91 where an offset read as "16" instead of "15".
+// ver 0.10 - changed number of columns from 5 to 4
+//
+// TTDO
+
+function d2h(d,n){ 
+	// convert decimal value to hexadecimal
+	var s = d.toString(16);
+	// left pad with zeroes to get length of n
+	while( s.length < n ){ s = "0"+s; }
+	return s;
+}
+
+function d2h0x(d,n){
+	// convert decimal value to hexadecimal preceded by "0x"
+	var s = d2h(d,n);
+	return "0x"+s;
+}
+
+function pHexDigit(c){
+	// is the character a hexadecimal digit or not?
+	var h = "0123456789ABCDEFabcdef";
+	for(var i=0;i<h.length;i++){
+		if( c == h[i] ) return 1;
+	}
+	return 0;
+}
+
+function ExtractBytes( s, n ){
+	// return hex string less any whitespace or nonhexadecimal characters
+	s = s.toUpperCase();
+	var r = "";
+	var i;
+	for(i=0;i<s.length;i++){
+		if( pHexDigit(s[i]) ){
+			r+=s.substr(i,1)
+		}
+		//***ttdo alert if nonwhitespace, nonhex characters appear
+	}
+	if( n == 0 ){
+		// ensure even number of characters
+		while( r.length%2 ) r = "0"+r;
+	}else{
+		// extend length to desired length
+		//***ttdo alert if too many characters according to field length
+		while( r.length < (n*2) ) r = "0"+r;
+	}
+	return r
+}
+
+// encoded frame information
+// frametype; frame name; list of ( field name, field length )
+// positive field length is number of bytes expected
+// zero field length is variable - use bytes till the end
+// negative field length is number of alphabetical characters which need converting to uppercase and then to ascii value
+var     links = [
+        [0x08,'AT Command',[["API",1],["FrameID",1],["AT Cmd",-2],["AT CmdData",0]]],
+        [0x09,'AT Command Queue Register Value',[["API",1],["FrameID",1],["AT Cmd",-2],["AT CmdData",0]]],
+        [0x10,'ZigBee Transmit Request',[["API",1],["FrameID",1],["64DestAddr",8],["16DeviceAddr",2],["Radius",1],["Options",1],["RF_Data",0]]],        
+        [0x11,'Explicit Addressing ZigBee Command Frame',
+                    [["API",1],["FrameID",1],["64DestAddr",8],["16DestAddr",2],["SrcEP",1],["DestEP",1],["ClusterID",2],["ProfileID",2],["Radius",1],["Options",1],["RF_Data",0]]],      
+        [0x17,'Remote AT Command Request',[["API",1],["FrameID",1],["64DestAddr",8],["16DeviceAddr",2],["RemoteCmdOptions",1],["AT Cmd",-2],["AT CmdData",0]]],                                        
+        [0x21,'ZigBee Create Source Route',[["API",1],["FrameID",1],["64DestAddr",8],["16DestAddr",2],["Options",1],["#RouteRecords",1],["RouteRecords",0]]],
+        [0x24,'ZigBee Register Joining Device',[["API",1],["FrameID",1],["64DeviceAddr",8],["16DeviceAddr",2],["Options",1],["Key",16]]],
+        [0x88,'AT Command Response',[["API",1],["FrameID",1],["AT Cmd",-2],["Status",1],["CmdData",0]]],
+        [0x8A,'Modem Status',[["API",1],["Status",1]]],      
+        [0x8B,'ZigBee Tx Status',[["API",1],["FrameID",1],["16DestAddr",2],["Transmit Retries",1],["Delivery Status",1],["Discovery Status",1]]],
+        [0x90,'ZigBee Receive Packet',[["API",1],["64DestAddr",8],["16SrcAddr",2],["Rcv Options",1],["RcvdData",0]]],
+        [0x91,'ZigBee Explicit Rx Indicator',[["API",1],["64DestAddr",8],["16DestAddr",2],["SrcEP",1],["DestEP",1],["ClusterID",2],["ProfileID",2],["Options",1],["RF_Data",0]]],
+        [0x92,'ZigBee IO Data Sample Rx Indicator',[["API",1],["64SrcAddr",8],["16SrcAddr",2],["Rcv Options",1],["NumSamples",1],["DigitalMask",2],["AnalogMask",1],["Samples",0]]],
+        [0x94,'XBee Sensor Read Indicator',[["API",1],["64SrcAddr",8],["16SrcAddr",2],["Rcv Options",1],["1WireSensors",1],["ADValues",8],["TempRead",2]]],
+        [0x95,'Node Identification Indicator',[["API",1],["64SndrAddr",8],["16SndrAddr",2],["Rcv Options",1],["16SrcAddr",2],["64SrcAddr",8],["OtherFields",0]]],
+        [0x97,'Remote Command Response',[["API",1],["FrameID",1],["64SrcAddr",8],["16SrcAddr",2],["AT Cmd",2],["Status",1],["CmdData",0]]],
+        [0xA0,'Over-the-Air Firmware Update Status',[["API",1],["64SrcAddr",8],["16DestAddr",2],["Rcv Options",1],["BootloaderMsgType",1],["Block#",1],["64TargetAddr",8]]],
+        [0xA1,'ZigBee Route Record Indicator',[["API",1],["64SrcAddr",8],["16SrcAddr",2],["Options",1],["#RouteRecords",1],["RouteRecords",0]]],
+        [0xA2,'ZigBee Device Authenticated Indicator',[["API",1],["64SrcAddr",8],["16SrcAddr",2],["Status",1]]],
+        [0xA3,'ZigBee Many to One Route Request Indicator',[["API",1],["64SrcAddr",8],["16SrcAddr",2],["Rsvrd",1]]],
+        [0xA4,'ZigBee Register Joining Device Status',[["API",1],["FrameID",1],["Status",1]]],
+		[0xA5,'Join Notification Status',[["API",1],["16ParentAddr",2],["16NewNodeAddr",2],["64NewNodeAddr",8],["Status",1]]]
+            ] ;
+			
+function Doc(n){
+// this function generates html table code to display hierarchical text information
+// e is set to a number of lines, each consisting of elements.
+// each element defines a line
+// a field in an element, if a string, appears as a simple string
+// otherwise the field will be represented as a list of a string and two values.
+// the first value defines how many rows the string should span, the second value how many columns.
+
+var frametype = links[n][0];
+var e;
+
+        if( frametype == 0x08)
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x05"],
+               [["Frame-specific Data",5,1],"Frame Type","3","0x08","API Identifier"],
+               ["Frame ID","4","0x52 (R)","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["AT Command",2,1],"5","0x4E (N)",["Command Name - Two ASCII characters that identify the AT Command.",2,1]],
+               ["6","0x4A (J)"],
+               ["Parameter Value","7","0xE0","If present, indicates the requested parameter value to set the given register.\nIf no characters present, register is queried."],
+               [["Checksum",1,2],"8","0x2D","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x09 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x05"],
+               [["Frame-specific Data",5,1],"Frame Type","3","0x09","API Identifier"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["AT Command",2,1],"5","0x42 (B)",["Command Name - Two ASCII characters that identify the AT Command.",2,1]],
+               ["6","0x44 (D)"],
+               ["Parameter Value\n(BD7 = 115200 baud)","7","0x07","If present, indicates the requested parameter value to set the given register.\nIf no characters present, register is queried."],
+               [["Checksum",1,2],"8","0x6B","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x10 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x16"],
+               [["Frame-specific Data",22,1],"Frame Type","3","0x10","ZigBee Transmit Request"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["64-bit Destination\nAddress",8,1],"5 MSB","0x00",["Set to the 64-bit address of the destination device.  The following addresses are also supported:\n0x0000000000000000 - Reserved 64-bit address for the coordinator.\n0x000000000000FFFF - Broadcast address",8,1]],
+               ["6","0x13"],
+               ["7","0xA2"],
+               ["8","0x00"],
+               ["9","0x40"],
+               ["10","0x0A"],
+               ["11","0x01"],
+               ["12","0x27"],
+               [["16-bit Destination\nNetwork Address",2,1],"13 MSB","0xFF",["Set to the 16-bit address of the destination device, if known.  Set to 0xFFFE if the address is unknown, or if sending a broadcast.",2,1]],
+               ["14 LSB","0xFE"],
+               ["Broadcast Radius","15","0x00","Sets the maximum number of hops a broadcast transmission can traverse.  If set to 0, the transmission radius will be set to the network maximum hops value."],
+               ["Options","16","0x00","Bitfield of supported transmission options.  Supported values include the following:\n0x01 - Disable ACK\n0x20 - Enable APS encryption (if EE=1)\n0x40 - Use the extended transmission timeout for this destination.\n\nEnabling APS encryption decreases the maximum number of RF payload bytes by 4 (below the value reported by NP).\n\nSetting the extended timeout bit causes the stack to set the extended transmission timeout for the destination address. (See chapter 4).\n\nAll unused and unsupported bits must be set to 0."],
+               [["RF Data",8,1],"17","0x54",["Data that is sent to the destination device.",8,1]],
+               ["18","0x78"],
+               ["19","0x44"],
+               ["20","0x61"],
+               ["21","0x74"],
+               ["22","0x61"],
+               ["23","0x30"],
+               ["24","0x41"],
+               [["Checksum",1,2],"25","0x13","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]          
+        else if( frametype == 0x11 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x1A"],
+               [["Frame-specific Data",26,1],"Frame Type","3","0x11","API Identifier"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["64-bit Destination\nAddress",8,1],"5 MSB","0x00",["Set to the 64-bit address of the destination device.  The following addresses are also supported:\n0x0000000000000000 - Reserved 64-bit address for the coordinator.\n0x000000000000FFFF - Broadcast address",8,1]],
+               ["6","0x00"],
+               ["7","0x00"],
+               ["8","0x00"],
+               ["9","0x00"],
+               ["10","0x00"],
+               ["11","0x00"],
+               ["12","0x00"],
+               [["16-bit Destination\nNetwork Address",2,1],"13 MSB","0xFF",["Set to the 16-bit address of the destination device, if known.  Set to 0xFFFE if the address is unknown, or if sending a broadcast.",2,1]],
+               ["14 LSB","0xFE"],
+               ["Source Endpoint","15","0xA1","Source endpoint for the transmission."],
+               ["Destination Endpoint","16","0xA1","Destination endpoint for the transmission."],
+               [["Cluster ID",2,1],"17","0x15",["Cluster ID used in the transmission.",2,1]],
+               ["18","0x54"],
+               [["Profile ID",2,1],"19","0xC1",["Profile ID used in the transmission.",2,1]],
+               ["20","0x05"],
+               ["Broadcast Radius","21","0x00","Sets the maximum number of hops a broadcast transmission can traverse.  If set to 0, the transmission radius will be set to the network maximum hops value."],
+               ["Transmit Options","22","0x00","0, or 0x20 if APS end-to-end security should be invoked."],
+               [["Data Payload",6,1],"23","0x54",["Data that is sent to the destination device.",6,1]],
+               ["24","0x78"],
+               ["25","0x44"],
+               ["26","0x61"],
+               ["27","0x74"],
+               ["28","0x61"],
+               [["Checksum",1,2],"29","0x3A","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0x17 )
+            e = [[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x10"],
+               [["Frame-specific Data",16,1],"Frame Type","3","0x17","API Identifier"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["64-bit Destination\nAddress",8,1],"5 MSB","0x00",["Set to the 64-bit address of the destination device.  The following addresses are also supported:\n0x0000000000000000 - Reserved 64-bit address for the coordinator.\n0x000000000000FFFF - Broadcast address",8,1]],
+               ["6","0x13"],
+               ["7","0xA2"],
+               ["8","0x00"],
+               ["9","0x40"],
+               ["10","0x40"],
+               ["11","0x11"],
+               ["12","0x22"],
+               [["16-bit Destination\nNetwork Address",2,1],"13 MSB","0xFF",["Set to the 16-bit address of the destination device, if known.  Set to 0xFFFE if the address is unknown, or if sending a broadcast.",2,1]],
+               ["14 LSB","0xFE"],
+               ["Remote Command Options","15","0x02 (apply changes)","Bitfield to enable various remote command options.  Supported vlaues include: 0x02 - Apply changes on remote. (If not set, AC command must be sent before changes will take effect.) All other bits must be set to zero.  All unused and unsupported bits must be set to 0."],
+               [["AT Command",2,1],"16","0x42 (B)",["Name of the Command.",2,1]],
+               ["17","0x48 (H)"],
+               ["Command Parameter","18","0x01","If present, indicates the requested parameter value to set the given register.  If no characters are present, the register is queried."],
+               [["Checksum",1,2],"19","0xF5","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]                        
+        else if( frametype == 0x21 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x10"],
+               [["Frame-specific Data",16,1],"Frame Type","3","0x21","Create Source Route"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["64-bit Destination\nAddress",8,1],"5 MSB","0x00",["Extended (64-bit) address of the destination device.  The following addresses are also supported:\n0x0000000000000000 - Reserved 64-bit address for the coordinator.\n0x000000000000FFFF - Broadcast address",8,1]],
+               ["6","0x13"],
+               ["7","0xA2"],
+               ["8","0x00"],
+               ["9","0x40"],
+               ["10","0x40"],
+               ["11","0x11"],
+               ["12","0x22"],
+               [["16-bit Destination\nNetwork Address",2,1],"13 MSB","0x33",["Network (16-bit) address of the destination device, if known.  Set to 0xFFFE if the address is unknown, or if sending a broadcast.",2,1]],
+               ["14 LSB","0x44"],
+               ["Receive Options","15","0x00","Set to 0x00"],
+               ["# of Route Records","16","0x01","The number of route records (16-bit addresses) which follow."],
+               [["Route Record",2,1],"17","0xEE",["Each record holds a 16-bit address.  The first record is the 16-bit address of the neighbor of the device that sent the route record.  The last record is the 16-bit address of the last hop of the route record (neighbor of the recipient).",2,1]],
+               ["18","0xFF"],
+               [["Checksum",1,2],"19","0x10","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x24 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x1D"],
+               [["Frame-specific Data",29,1],"Frame Type","3","0x24","API Identifier"],
+               ["Frame ID","4","0x00","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["64-bit Destination\nAddress",8,1],"5 MSB","0x01",["Extended (64-bit) address of the destination device.  The following addresses are also supported:\n0x0000000000000000 - Reserved 64-bit address for the coordinator.\n0x000000000000FFFF - Broadcast address",8,1]],
+               ["6","0x02"],
+               ["7","0x03"],
+               ["8","0x04"],
+               ["9","0x05"],
+               ["10","0x06"],
+               ["11","0x07"],
+               ["12","0x08"],
+               [["16-bit Destination\nNetwork Address",2,1],"13 MSB","0xFF",["Network (16-bit) address of the destination device, if known.  Set to 0xFFFE if the address is unknown, or if sending a broadcast.",2,1]],
+               ["14 LSB","0xFE"],
+               ["Options","15","0x00","Set to 0."],
+               [["Key",16,1],"16","0x01",["The initial trust center link key of the device, settable up to 16 bytes.  If less than 16 bytes are supplied, the upper unspecified bytes of the key will be zero padded.  If a zero length key field is supplied, then the device is removed from the link key table.",16,1]],
+               ["17","0x02"],
+               ["18","0x03"],
+               ["19","0x04"],
+               ["20","0x05"],
+               ["21","0x06"],
+               ["22","0x07"],
+               ["23","0x08"],
+               ["24","0x09"],
+               ["25","0x0A"],
+               ["26","0x0B"],
+               ["27","0x0C"],
+               ["28","0x0D"],
+               ["29","0x0E"],
+               ["30","0x0F"],
+			   ["31","0x00"],
+               [["Checksum",1,2],"32","0x42","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x88 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x05"],
+               [["Frame-specific Data",6,1],"Frame Type","3","0x88","API Identifier"],
+               ["Frame ID","4","0x01","Identifies the UART data frame for the host to correlate with a subsequent ACK (acknowledgement).\nIf set to 0, no response is sent."],
+               [["AT Command",2,1],"5","0x42",["Command Name - Two ASCII characters that identify the AT Command.",2,1]],
+               ["6","0x44"],
+               ["Command Status","7","0x00","0 = OK\n1 = ERROR\n2 = Invalid Command\n3 = Invalid Parameter"],
+               ["Command Data"," "," ","Register data in binary format.  If the register was set, then this field is not returned, as in this example."],
+               [["Checksum",1,2],"8","0xF0","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]            
+        else if( frametype == 0x8A )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x02"],
+               [["Frame-specific Data",6,1],"Frame Type","3","0x8A","API Identifier"],
+               ["Status","4","0x06","0 = Hardware reset\n1 = Watchdog timer reset\n2 = Joined network (routers and end devices)\n3 = Disassociated\n6 = Coordinator started\n7 = Network security key was updated\n8 = Voltage supply limit exceeded (S2B)\n0x10 = Key establishment complete\n0x80 = Stack error"],
+               [["Checksum",1,2],"8","0xF0","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x8B )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum",2,1]],
+               ["2 LSB","0x07"],
+               [["Frame-specific Data",7,1],"Frame Type","3","0x8B","ZigBee Transmit Status"],
+               ["Frame ID","4","0x01","Identifies the UART data frame being reported. Note: If Frame ID = 0 in the AT Command frame, then no AT Command Response frame will be sent."],
+               [["16-bit address of destination",2,1],"5","0x7D",["16-bit Network Address the packet was delivered to (if success). If not success, this address matches the Destination Network Address that was provided in the Transmit Request Frame.",2,1]],
+               ["6","0x84"],
+               ["Transmit Retry Count","7","0x00","The number of application transmission retries that took place."],
+               ["Delivery Status","8","0x00","0x00 = Success\n0x02 = CCA Failure\n0x18 = No Buffers\n0x21 = Network ACK Failure\n0x22 = Not Joined to Network\n0x23 = Self-addressed\n0x24 = Address Not Found\n0x25 = Route Not Found\n0x26 = Relay of Broadcast not heard\n0x2B = Invalid Binding Table Index\n0x2C = Invalid Endpoint\n0x32 = Resource Error\n0x74 = Data payload too large\n0xBB = Key not authorized"],
+               ["Discovery Status","9","0x01","0x00 = No Discovery Overhead\n0x01 = Address Discovery\n0x02 = Route Discovery\n0x03 = Address and Route Discovery"],
+               [["Checksum",1,2],"10","0x71","0xFF - the 8 bit sum of bytes between the length and the checksum fields."]
+               ]
+        else if( frametype == 0x90 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x18"],
+               [["Frame-specific Data",18,1],"Frame Type","3","0x90","ZigBee Receive Packet"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of sender.  Set to 0xFFFFFFFFFFFFFFFF (unknown 64-bit address) if the sender's 64-bit address is unknown.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x52"],
+               ["10","0x2B"],
+               ["11 LSB","0xAA"],
+               [["16-bit Source\nNetwork Address",2,1],"12 MSB","0x7D",["16-bit address of sender.",2,1]],
+               ["13 LSB","0x84"],
+               ["Receive Options","14","0x01","0x01 - Packet Acknowledged\r0x02 - Packet was a broadcast packet\r\n0x20 - Packet encrypted with APS encryption.\r0x40 - Packet was sent from an end device (if known)"],
+			   [["Received Data",6,1],"15","0x52",["Received RF data",6,1]],
+			   ["16","0x78"],
+			   ["17","0x44"],
+			   ["18","0x61"],
+			   ["19","0x74"],
+			   ["20","0x61"],
+               [["Checksum",1,2],"21","0x0D","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]            
+        else if( frametype == 0x91 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x18"],
+               [["Frame-specific Data",24,1],"Frame Type","3","0x91","ZigBee Explicit Rx Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of sender.  Set to 0xFFFFFFFFFFFFFFFF (unknown 64-bit address) if the sender's 64-bit address is unknown.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x52"],
+               ["10","0x2B"],
+               ["11 LSB","0xAA"],
+               [["16-bit Source\nNetwork Address",2,1],"12 MSB","0x7D",["16-bit address of sender.",2,1]],
+               ["13 LSB","0x84"],
+               ["Source Endpoint","14","0xE0","Endpoint of the source that initiated the transmission."],
+               ["Destination Endpoint","15","0xE0","Endpoint of the destination to which the message is addressed."],
+               [["Cluster ID",2,1],"16","0x22",["Cluster ID to which the packet was addressed.",2,1]],
+               ["17","0x11"],
+               [["Profile ID",2,1],"18","0xC1",["Profile ID to which the packet was addressed.",2,1]],
+               ["19","0x05"],
+               ["Receive Options","20","0x02","0x01 - Packet Acknowledged\n0x02 - Packet was a broadcast packet."],
+               [["Received Data",6,1],"21","0x52",["Received RF Data",6,1]],
+               ["22","0x78"],
+               ["23","0x44"],
+               ["24","0x61"],
+               ["25","0x74"],
+               ["26","0x61"],
+               [["Checksum",1,2],"27","0x52","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ] 
+        else if( frametype == 0x92 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x14"],
+               [["Frame-specific Data",20,1],"Frame Type","3","0x92","ZigBee IO Data Sample Rx Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of sender.  Set to 0xFFFFFFFFFFFFFFFF (unknown 64-bit address) if the sender's 64-bit address is unknown.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x52"],
+               ["10","0x2B"],
+               ["11 LSB","0xAA"],
+               [["16-bit Source\nNetwork Address",2,1],"12 MSB","0x7D",["16-bit address of sender.",2,1]],
+               ["13 LSB","0x84"],
+               ["Receive Options","14","0x01","0x01 - Packet Acknowledged\r\n0x02 - Packet was a broadcast packet"],
+			   ["Number of Samples","15","0x01","Number of sample sets included in the payload. (Always set to 1)"],
+			   [["Digital Channel Mask",2,1],"16","0x00",["Bitmask field that indicates which digital IO lines on the remote have smapling enabled (if any).",2,1]],
+			   ["17","0x1C"],
+			   ["Analog Channel Mask","18","0x02","Bitmask field that indicates which analog IO lines have sampling enabled (if any)."],
+			   [["Digital Samples",2,1],"19","0x00",["If the sample set includes any digital IO lines (Digital Channel Mask > 0), these two bytes contain samples for all enabled digital IO lines.  DIO lines that do not have sampling enabled return 0. Bits in these 2 bytes map the same as they do in the Digital Channels Mask field",2,1]],
+			   ["20","0x14"],
+			   [["Analog Sample",2,1],"21","0x02",["If the sample set includes any analog input lines (Analog Channel Mask > 0), each enabled analog input returns a 2-byte value indicating the A/D measurement of that input. Analog samples are ordered sequentially from AD0/DIO0 to AD3/DIO3, to the supply voltage.",2,1]],
+			   ["22","0x25"],
+			   [["Checksum",1,2],"23","0xF5","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ] 
+        else if( frametype == 0x94 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x17"],
+               [["Frame-specific Data",23,1],"Frame Type","3","0x94","XBee Sensor Read Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of sender.  Set to 0xFFFFFFFFFFFFFFFF (unknown 64-bit address) if the sender's 64-bit address is unknown.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x52"],
+               ["10","0x2B"],
+               ["11 LSB","0xAA"],
+               [["16-bit Source\nNetwork Address",2,1],"12 MSB","0xDD",["16-bit address of sender.",2,1]],
+               ["13 LSB","0x6C"],
+               ["Receive Options","14","0x01","0x01 - Packet Acknowledged\r\n0x02 - Packet was a broadcast packet"],
+			   ["1-Wire Sensors","15","0x03","0x01 = A/D Sensor Read\r\n0x02 = Temperature Sensor Read\r\n0x60 = Water present (module CD pin low)"],
+			   [["A/D Values",8,1],"16","0x00",["Indicates a two-byte value for each of four A/D sensors (A,B,C,D).  Set to 0xFFFFFFFFFFFFFFFF if no A/Ds are found.",8,1]],
+			   ["17","0x02"],
+			   ["18","0x00"],
+			   ["19","0xCE"],
+			   ["20","0x00"],
+			   ["21","0xEA"],
+			   ["22","0x00"],
+			   ["23","0x52"],
+			   [["Temperature Read",2,1],"24","0x01",["Indicates a two-byte value read from a digital thermometer if present.  Set to 0xFFFF if not found.",2,1]],
+			   ["25","0x6A"],
+			   [["Checksum",1,2],"26","0x8B","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ] 
+        else if( frametype == 0x95 )
+			e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x20"],
+               [["Frame-specific Data",32,1],"Frame Type","3","0x95","Node Identification Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of sender.  Set to 0xFFFFFFFFFFFFFFFF (unknown 64-bit address) if the sender's 64-bit address is unknown.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x52"],
+               ["10","0x2B"],
+               ["11 LSB","0xAA"],
+               [["16-bit Source\nNetwork Address",2,1],"12 MSB","0x7D",["16-bit address of sender.",2,1]],
+               ["13 LSB","0x84"],
+               ["Receive Options","14","0x02","0x01 - Packet Acknowledged\r\n0x02 - Packet was a broadcast packet"],
+			   [["Source 16-bit Address",2,1],"15","0x7D",["Set to the 16-bit network address of the remote.  Set to 0xFFFE if unknown.",2,1]],
+			   ["16","0x84"],
+			   [["64-bit Network Address",8,1],"17","0x00",["Indicates the 64-bit address of the remote module that trnasmitted the node identification frame.",8,1]],
+			   ["18","0x13"],
+			   ["19","0xA2"],
+			   ["20","0x00"],
+			   ["21","0x40"],
+			   ["22","0x52"],
+			   ["23","0x2B"],
+			   ["24","0xAA"],
+			   [["NI String",2,1],"25","0x20",["Node identifier string on the remote device.  The NI-string is termianted with a NULL byte (0x00).",2,1]],
+			   ["26","0x00"],
+			   [["Parent 16-bit address",2,1],"27","0xFF",["Indicates the 16-bit address of the remote's parent of 0xFFFE if the remote has no parent.",2,1]],
+			   ["28","0xFE"],
+			   ["Device Type","29","0x01","0 = Coordinator\r\n1 = Router\r\n2 = End Device"],
+			   ["Source Event","30","0x01","1 - Frame sent by node identification pushbutton event (see D0 command)\r\n2 = Frame sent after joining event occurred (see JN command).\r\n3 = Frame sent after power cycle event occurred (see JN command)."],
+			   [["Digi Profile Id",2,1],"31","0xC1",["Set to Digi's application profile ID",2,1]],
+			   ["32","0x05"],
+			   [["Manufacturer ID",2,1],"33","0x10",["Set to Digi's Manufacturer ID.",2,1]],
+			   ["34","0x1E"],
+			   [["Checksum",1,2],"35","0x1B","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0x97 )
+   			e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x13"],
+               [["Frame-specific Data",19,1],"Frame Type","3","0x97","Remote Command Response"],
+			   ["Frame ID","4","0x55","This is the same value passed in to the request."],
+               [["64-bit Source\n(remote) Address",8,1],"5 MSB","0x00",["The address of the remote radio returning this response.",8,1]],
+               ["6","0x13"],
+               ["7","0xA2"],
+               ["8","0x00"],
+               ["9","0x40"],
+               ["10","0x52"],
+               ["11","0x2B"],
+               ["12 LSB","0xAA"],
+               [["16-bit Source\n(remote) Network Address",2,1],"13 MSB","0x7D",["Set to the 16-bit network address of the remote.  Set to 0xFFFE if unknown.",2,1]],
+               ["14 LSB","0x84"],
+			   [["AT Commands",2,1],"15","0x53",["Name of the command.",2,1]],
+			   ["16","0x4C"],
+			   ["Command Status","17","0x00","0 = OK\n1 = ERROR\n2 = Invalid Command\n3 = Invalid Parameter\n4 = Remote Command Transmission Failed."],
+			   [["Command Data",4,1],"18","0x40",["Register data in binary format.  If the register was wet, then this field is not returned.",4,1]],
+			   ["19","0x52"],
+			   ["20","0x2B"],
+			   ["21","0xAA"],
+			   [["Checksum",1,2],"22","0xF0","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0xA0 )
+   			e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x16"],
+               [["Frame-specific Data",22,1],"Frame Type","3","0xA0","Over-the-Air Firmware Update Status"],
+               [["64-bit Source\n(remote) Address",8,1],"4 MSB","0x00",["The address of the remote radio returning this response.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x3E"],
+               ["10","0x07"],
+               ["11 LSB","0x50"],
+               [["16-bit Destination\nAddress",2,1],"12","0x00",["16-bit address of the updater device.",2,1]],
+               ["13","0x00"],
+			   ["Receive Options","14","0x01","0x01 - Packet Acknowledged.\n0x02 - Packet was a broadcast."],
+			   ["Bootloader Message Type","15","0x52","0x06 - ACK\n0x15 - NACK\n0x40 - No Mac ACK\n0x51 - Query (received if the bootloader is not active on the target)\n0x52 - Query Response"],
+			   ["Block Number","16","0x00","Block number used in the update request.  Set to 0 if not applicable."],
+			   [["64-bit Target Address",8,1],"17","0x00",["64-bit Address of remote device that is being updated (target).",8,1]],
+			   ["18","0x13"],
+			   ["19","0xA2"],
+			   ["20","0x00"],
+			   ["21","0x40"],
+			   ["22","0x52"],
+			   ["23","0x2B"],
+			   ["24","0xAA"],
+			   [["Checksum",1,2],"25","0x66","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0xA1 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x13"],
+               [["Frame-specific Data",19,1],"Frame Type","3","0xA1","Route Record Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x00",["64-bit address of the device that initiated the route record.",8,1]],
+               ["5","0x13"],
+               ["6","0xA2"],
+               ["7","0x00"],
+               ["8","0x40"],
+               ["9","0x40"],
+               ["10","0x11"],
+               ["11 LSB","0x22"],
+               [["Source (updated)\n16-bit Address",2,1],"12 MSB","0x33",["16-bit address of the device that initiated the route record.",2,1]],
+               ["13 LSB","0x44"],
+               ["Receive Options","14","0x01","0x01 - Packet Acknowledged\n0x02 - Packet was a broadcast."],
+               ["Number of Addresses","15","0x03","The number of addresses in the source route (excluding source and destination)."],
+               [["Address 1",2,1],"16","0xEE",["(neighbor of destination)",2,1]],
+               ["17","0xFF"],
+               [["Address 2",2,1],"18","0xCC",["Address of intermediate hop.",2,1]],
+               ["19","0xDD"],
+               [["Address n",2,1],"20","0xAA",["Two bytes per 16-bit address.",2,1]],
+               ["21","0xBB"],               
+               [["Checksum",1,2],"22","0x80","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0xA2 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x0C"],
+               [["Frame-specific Data",12,1],"Frame Type","3","0xA2","ZigBee Device Authenticated Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x01",["Extended 64-bit address of the authenticated device.",8,1]],
+               ["5","0x02"],
+               ["6","0x03"],
+               ["7","0x04"],
+               ["8","0x05"],
+               ["9","0x06"],
+               ["10","0x07"],
+               ["11 LSB","0x08"],
+               [["16-bit Source Address",2,1],"12 MSB","0xFF",["16-bit address of the authenticated device.",2,1]],
+               ["13 LSB","0xFE"],
+               ["Status","14","0x00","Success."],
+               [["Checksum",1,2],"15","0x3C","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0xA3 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x0C"],
+               [["Frame-specific Data",12,1],"Frame Type","3","0xA3","ZigBee Many-to-One Request Indicator"],
+               [["64-bit Source\nAddress",8,1],"4 MSB","0x01",["64-bit address of the device that sent the many-to-one route request.",8,1]],
+               ["5","0x02"],
+               ["6","0x03"],
+               ["7","0x04"],
+               ["8","0x05"],
+               ["9","0x06"],
+               ["10","0x07"],
+               ["11 LSB","0x08"],
+               [["16-bit Source Address",2,1],"12 MSB","0xFF",["16-bit address of the device that initiated the many-to-one route request.",2,1]],
+               ["13 LSB","0xFE"],
+               ["Reserved","14","0x00","Set to zero."],
+               [["Checksum",1,2],"15","0x3B","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]
+        else if( frametype == 0xA4 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x03"],
+               [["Frame-specific Data",3,1],"Frame Type","3","0xA4","ZigBee Register Joining Device Status"],
+               ["Frame ID","4","0x04","Identifies the UART data frame for the host to match with a subsequent TX Status.  It matches the Frame ID of the registration request (0x24)."],
+               ["Status","5","0","version 3x19:\n0x00 - Success\n0xB3 - Invalid Address\n0xFF - Key not found\n\nversion 3x1A:\n0x00 - Success\n0x01 - Key is too long\n0xB1 - Address was not found in the key table\n0xB2 - Key value is invalid; a key value of all 0x00 or all 0xFF are reserved\n0xB4 - Key table is already full"],
+               [["Checksum",1,2],"6","0x57","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ] 
+        else if( frametype == 0xA5 )
+            e=[[["Frame Fields",1,2],"Offset","Example","Description"],
+               [["Start Delimiter",1,2],"0","0x7E","Start Delimiter"],
+               [["Length",2,2],"1 MSB","0x00",["Number of bytes between the length and the checksum fields.",2,1]],
+               ["2 LSB","0x0E"],
+               [["Frame-specific Data",14,1],"Frame Type","3","0xA5","Join Notification Status"],
+               [["16-bit Parent Address",2,1],"4","0x12",["16-bit address of the parent device",2,1]],
+			   ["5","0x34"],
+			   [["16-bit New Node Address",2,1],"6","0x12",["Proposed 16-bit address for the joining device",2,1]],
+			   ["7","0x34"],
+			   [["64-bit New Node Address",8,1],"8","0x01",["64-bit MAC address of the joining device",8,1]],
+			   ["9","0x23"],
+			   ["10","0x45"],
+			   ["11","0x67"],
+			   ["12","0x89"],
+			   ["13","0xAB"],
+			   ["14","0xCD"],
+			   ["15","0xEF"],
+               ["Status","16","0x00","0x00 - Standard Security Secured Rejoin\n0x01 - Standard Security Unsecured Join\n0x02 - Device Left\n0x03 - Standard Security Unsecured Rejoin\n0x04 - High Security Secured Rejoin\n0x05 - High Security Unsecured Join\n0x07 - High Security Unsecured Rejoin"],
+               [["Checksum",1,2],"17","0x0E","0xFF - the 8 bit sum of bytes between the length and checksum fields."]
+               ]    			   
+        else
+            e = [["not yet implemented"]]
+	
+	// clear table3
+	var t3 = document.getElementById("Table3")
+	while(t3.hasChildNodes()) t3.removeChild(t3.lastChild)
+	
+	// give table3 a narrow border and a white background
+	var t = document.createElement("table")
+	t.setAttribute("border",1)
+	t.setAttribute("bgcolor","#FFFFFF")
+
+	// decode 'e'
+	var i,j;
+	// for each line
+	for(i=0;i<e.length;i++){
+		// create a row
+		var r = document.createElement("tr");
+		for(j=0;j<e[i].length;j++){
+			var d = document.createElement("td");	
+			// if field is a simple string, generate a simple text node
+			if( typeof(e[i][j]) == "string"  ){
+				var tn = document.createTextNode(e[i][j])
+				d.appendChild(tn);
+			}else{
+			// otherwise, decode the field to determine the rowspan and colspan for the string
+				var tn = document.createTextNode(e[i][j][0])
+				d.setAttribute("rowspan",e[i][j][1])
+				d.setAttribute("colspan",e[i][j][2])
+				d.appendChild(tn);
+			}
+			r.appendChild(d);		
+		}
+		t.appendChild(r);
+	}	
+	t3.appendChild(t)
+	t3.innerHTML = document.getElementById("Table3").innerHTML
+}
+			
+function MakeFrame(n){
+	var thelist = links[n][2];
+	var result="";
+	var i;
+	var item;
+	
+	// create a list of hex bytes for the frame
+	// for each field in the frame
+	//		extract the data from the textarea
+	//		convert to hex bytes
+	// prepend the start delimiter and length bytes
+	// calculate and append the checksum byte
+	// do escaping if AP2 mode is selected
+	
+	for(i=0;i<thelist.length;i++){
+		var name = "f"+i.toString();
+		var field = document.getElementById(name).value
+		var item = "";
+		if( thelist[i][1] > 0 ){
+			// hex bytes
+			item = ExtractBytes( field, thelist[i][1] );
+		}else if( thelist[i][1] == 0 ){
+			// zero: hex bytes till end of buffer
+			item = ExtractBytes( field, thelist[i][1] );
+		}else{
+			// negative: alpha characters
+			field = field.toUpperCase()
+			for(var j=0;j<field.length;j++){
+				var c = field.charCodeAt(j)
+				item += d2h(c,2)		
+			}			
+		}
+		result += item
+	}
+	
+	// add 7e delimiter, length bytes, checksum byte, capitalize, insert space between bytes
+	// calculate checksum
+	var checksum = 0;
+	for(i=0;i<result.length;i+=2){
+		checksum += parseInt("0x"+result.substr(i,2))
+	}
+	checksum = 0xff - (checksum%256);
+	checksum = d2h(checksum,2);
+	// assemble start delimiter, length bytes, frame, and checksum into a hex string
+	result = "7E" + d2h(result.length/2,4) + result + checksum;
+	
+	// shift to upper case
+	result = result.toUpperCase();
+	
+	// if AP Mode 2 is selected, then escape the necessary bytes
+	// after the start delimiter, length bytes thru checksum byte,
+	// to escape a character, insert 0x7D and follow it with the byte to be escaped xor'd with 0x20
+	// data bytes which need escaping: 0x7E, 0x7D, 0x11, 0x13
+	
+	// for testing
+	// for example, 7E 00 02 23 11 CB -> 7E 00 02 23 [ 7D 31 ] CB		
+	//result = "7E00022311CB"
+	
+	var b = document.getElementById("APMode_id2");
+	if( b.checked == true ){
+		var result3 = result.substr(0,2);
+		for(var i=2;i<result.length;i+=2){
+			var v = result.substr(i,2);
+			if( (v=="7E") || (v=="7D") || (v=="11") || (v=="13") ){
+				result3 += "7D" + d2h( parseInt("0x"+v)^0x20, 2);
+			}else{
+				result3 += v;
+			}
+		}
+		result = result3;
+	}
+	
+	// insert a space between bytes
+	var result2 = result.substr(0,2);
+	for(i=2;i<result.length;i+=2) result2 += " " + result.substr(i,2);	
+	
+	document.getElementById("fend").innerHTML = result2;
+
+}
+
+function Build(n){
+	// in Table2
+	// for each field in the selected frame
+	//		show a descriptor, textarea, and length code
+	// at the end provide a textarea for the built packet hex values
+	// and a button to build the packet.
+	
+	var s = links[n];
+
+	var t = document.createElement("table");
+	t.setAttribute("valign","top")
+	t.setAttribute("border",1)
+
+	var r = document.createElement("tr");
+	var d = document.createElement("td");
+	d.setAttribute("colspan",3);
+	var tn = document.createTextNode(s[1])
+	d.appendChild(tn);
+	r.appendChild(d);
+	t.appendChild(r);
+
+	var thelist = s[2];
+	var i;
+	for(i=0;i<thelist.length;i++){
+		var item = thelist[i];
+		var r = document.createElement("tr");
+		var d = document.createElement("td");
+		var x = document.createTextNode(item[0])
+		d.appendChild(x); 
+		r.appendChild(d);
+
+		d = document.createElement("td")
+		var x = document.createElement("textarea")
+		var thecode = "f"+i.toString();
+		x.setAttribute("id",thecode)
+		if(item[1]>0){
+			if(item[0]=="FrameID"){
+				x.innerHTML = "01"
+				}else{
+			x.innerHTML = d2h(0,item[1]*2);
+			}
+		}
+		d.appendChild(x)
+		r.appendChild(d);
+
+		d = document.createElement("td")
+		x = document.createTextNode(item[1])
+		d.appendChild(x)
+		r.appendChild(d)
+
+		t.appendChild(r);
+		}
+	
+	r = document.createElement("tr");
+	d = document.createElement("td");
+	tn = document.createTextNode("Packet")
+	d.appendChild(tn);
+	r.appendChild(d);
+
+	d = document.createElement("td")
+	x = document.createElement("textarea")
+	x.setAttribute("maxlength",768);
+	x.setAttribute("rows",8);
+	x.setAttribute("id","fend");
+	d.appendChild(x);
+	r.appendChild(d);
+
+	d = document.createElement("td")
+	x = document.createElement("input")
+	x.setAttribute("type","button")
+	x.setAttribute("value","Build\r\nPacket")
+	x.setAttribute("onclick","MakeFrame("+n+")")
+	d.appendChild(x)
+	r.appendChild(d)
+
+	t.appendChild(r);
+	
+	var t2 = document.getElementById("Table2")
+	while(t2.hasChildNodes()) t2.removeChild(t2.lastChild)
+	t2.appendChild(t)
+	t2.innerHTML = document.getElementById("Table2").innerHTML
+
+	var e0 = document.getElementById("f0")
+	e0.innerHTML = d2h(s[0],2)
+
+}
+
+function BuildPage(){
+	// in Table1
+	// create a button for each kind of API frame
+	// also provide radio buttons to select between AP1 and AP2 (escaping) modes
+	var numcolumns = 4;
+	
+	var d = document.getElementById("Table1");
+	var t1 = document.createElement("table");
+	t1.setAttribute("border","2")
+	var i;
+	
+	// build a row for the table
+	var tr = document.createElement("tr");	
+	
+	for(i=0;i<links.length;i++){
+
+		// build a data element for the table
+		var td = document.createElement("td");
+		var t = document.createElement("input");
+		t.setAttribute("type","button")
+		t.setAttribute("value",d2h0x(links[i][0],2)+" "+links[i][1])
+		t.setAttribute("onclick","Build("+i.toString()+");Doc("+i.toString()+")")
+		td.appendChild(t)
+		tr.appendChild(td);
+
+		if( (i%numcolumns) == (numcolumns-1) ){
+			t1.appendChild(tr);
+			tr = document.createElement("tr")
+		}
+	}
+
+	var td;
+	td = document.createElement("td");
+	td.innerHTML = "<input type='radio' id='APMode_id1' name='APMode' value=1 checked>AP1"
+	tr.appendChild(td);
+	
+	td = document.createElement("td");
+	td.innerHTML = "<input type='radio' id='APMode_id2' name='APMode' value=1>AP2"
+	tr.appendChild(td);
+
+	t1.appendChild(tr);
+	
+	d.appendChild(t1);
+	d.innerHTML = document.getElementById("Table1").innerHTML;
+
+}
+
+</script>
+</head>
+
+<body onload="document.bgColor='lightgreen';BuildPage();">
+
+<table id="BigTable" style="font-size:8pt;font-family:arial,sans-serif">
+	<tr>
+		<td valign=top colspan=2><p id="Table1" ></p></td>
+	</tr>
+	<tr>
+		<td valign=top><p id="Table2" ></p></td>
+		<td valign=top><p id="Table3" ></p></td>
+	</tr>
+</table>
+</body>
+</html>
