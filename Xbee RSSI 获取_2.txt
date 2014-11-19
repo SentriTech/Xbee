@@ -21,5 +21,5 @@ to be continued ...
 正常输出显示RSSI的PWM，给出的参考回答是Xbee离得很近，接收功率大，导致不能在PIN 6正确输出PWM。
 详细解释见链接：http://www.digi.com/support/forum/42603/pin-6-rssi-output
 2.有关发射功率，可以通过配置固件参数PL（Power Level）和PM（Power Mode）来控制，PL越小表示发射功率越低，PM选择disable boost mode，
-即不使能增强模式即可。
+即不使能增强模式即可，详见Xbee DataSheet.pdf的page 135。
 The End
